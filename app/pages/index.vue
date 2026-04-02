@@ -3,6 +3,7 @@
     <div ref="mapContainer" class="map-container"></div>
 
     <div class="dashboard-panel"></div>
+    <div class="source-disclaimer">資料來源：交通部高速公路局「交通資料庫」</div>
   </div>
 </template>
 
@@ -187,5 +188,20 @@ onUnmounted(() => {
   background: rgba(0, 0, 0, 0.8);
   border-radius: 8px;
   z-index: 10;
+}
+
+.source-disclaimer {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #f5f5f5;
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  backdrop-filter: blur(2px);
 }
 </style>
