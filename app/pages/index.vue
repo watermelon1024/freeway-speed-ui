@@ -49,6 +49,8 @@ function laneLayerId(laneIndex) {
 
 function updateLineColors(speedMap) {
   if (!map.value || !map.value.isStyleLoaded()) return;
+  if (!map.value.getLayer(MACRO_LAYER_ID)) return;
+  if (!map.value.isSourceLoaded("highways")) return;
 
   const macroColorExpression = ["match", ["get", "LinkID"]];
   for (const [linkId, data] of Object.entries(speedMap || {})) {
@@ -90,7 +92,7 @@ onMounted(() => {
   map.value.on("load", () => {
     map.value.addSource("highways", {
       type: "geojson",
-      data: "/highway_links.geojson", 
+      data: "/highway_links.geojson",
     });
 
     // macro layer: shows average speed when zoomed out
@@ -131,6 +133,14 @@ onMounted(() => {
       });
     }
 
+    updateLineColors(realtimeSpeeds.value);
+  });
+
+  // Avoid first-load race: if speed data arrives before GeoJSON source is ready,
+  // re-apply colors once the highways source finishes loading.
+  map.value.on("sourcedata", (event) => {
+    if (event.sourceId !== "highways") return;
+    if (!map.value || !map.value.isSourceLoaded("highways")) return;
     updateLineColors(realtimeSpeeds.value);
   });
 
