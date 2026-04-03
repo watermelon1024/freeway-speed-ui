@@ -41,6 +41,7 @@ function speedToColor(speed) {
   if (speed >= 80) return "#00ff00";
   if (speed >= 60) return "#ffff00";
   if (speed >= 40) return "#ffa500";
+  if (speed < 20) return "#8000ff";
   return "#ff0000";
 }
 
