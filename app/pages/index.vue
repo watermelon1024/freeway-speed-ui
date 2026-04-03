@@ -24,6 +24,7 @@ const POLL_INTERVAL_MS = 60_000;
 
 const realtimeSpeeds = ref({});
 let pollTimer = null;
+const hoverPopup = shallowRef(null);
 
 const {
   data: speedData,
@@ -45,6 +46,68 @@ function speedToColor(speed) {
 
 function laneLayerId(laneIndex) {
   return `${MICRO_LAYER_PREFIX}${laneIndex}`;
+}
+
+function getSegmentName(properties, linkId) {
+  return properties?.SectionName || properties?.RoadSectionName || properties?.RoadName || `Link ${linkId}`;
+}
+
+function formatSpeed(speed) {
+  return typeof speed === "number" ? `${speed} km/h` : "--";
+}
+
+function buildPopupHTML(linkId, properties, zoomLevel) {
+  const speedData = realtimeSpeeds.value?.[linkId];
+  const segmentName = getSegmentName(properties, linkId);
+  const avgSpeed = formatSpeed(speedData?.avg);
+
+  let lanesHtml = "";
+  if (zoomLevel >= 13 && speedData?.lanes && Object.keys(speedData.lanes).length > 0) {
+    const laneEntries = Object.entries(speedData.lanes)
+      .map(([lane, speed]) => [Number(lane), speed])
+      .sort((a, b) => a[0] - b[0]);
+
+    const laneRows = laneEntries.map(([lane, speed]) => `<li>車道 ${lane}: ${formatSpeed(speed)}</li>`).join("");
+
+    lanesHtml = `<hr style=\"border:0;border-top:1px solid rgba(255,255,255,.2);margin:8px 0;\"><ul style=\"margin:0;padding-left:16px;\">${laneRows}</ul>`;
+  }
+
+  return `<div style=\"font-size:12px;line-height:1.5;\"><div style=\"font-weight:700;margin-bottom:4px;\">${segmentName}</div><div>LinkID: ${linkId}</div><div>平均時速: ${avgSpeed}</div>${lanesHtml}</div>`;
+}
+
+function showHoverPopup(event) {
+  if (!map.value || !event.features?.length) return;
+
+  const feature = event.features[0];
+  const linkId = feature?.properties?.LinkID;
+  if (!linkId) return;
+
+  if (!hoverPopup.value) {
+    hoverPopup.value = new maplibregl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+      offset: 12,
+      className: "speed-popup",
+    });
+  }
+
+  const html = buildPopupHTML(linkId, feature.properties, map.value.getZoom());
+  hoverPopup.value.setLngLat(event.lngLat).setHTML(html).addTo(map.value);
+  map.value.getCanvas().style.cursor = "pointer";
+}
+
+function hideHoverPopup() {
+  if (!map.value) return;
+  map.value.getCanvas().style.cursor = "";
+  if (hoverPopup.value) {
+    hoverPopup.value.remove();
+  }
+}
+
+function bindLayerHover(layerId) {
+  if (!map.value) return;
+  map.value.on("mousemove", layerId, showHoverPopup);
+  map.value.on("mouseleave", layerId, hideHoverPopup);
 }
 
 function updateLineColors(speedMap) {
@@ -110,6 +173,7 @@ onMounted(() => {
         "line-color": "#666666",
       },
     });
+    bindLayerHover(MACRO_LAYER_ID);
 
     // micro layers: shows lane-level speed when zoomed in
     const laneWidth = 3;
@@ -131,6 +195,7 @@ onMounted(() => {
           "line-color": TRANSPARENT,
         },
       });
+      bindLayerHover(laneLayerId(laneIndex));
     }
 
     updateLineColors(realtimeSpeeds.value);
@@ -175,6 +240,7 @@ onUnmounted(() => {
   }
 
   if (map.value) {
+    hideHoverPopup();
     map.value.remove();
   }
 });
