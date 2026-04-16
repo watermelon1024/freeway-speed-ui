@@ -176,7 +176,9 @@ onMounted(() => {
     container: mapContainer.value,
     style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
     center: [120.982, 23.9738],
-    zoom: 7,
+    zoom: 8,
+    minZoom: 6,
+    maxZoom: 15,
   });
   map.value = mapInstance;
 
