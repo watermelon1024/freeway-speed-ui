@@ -3,7 +3,7 @@ name: Auto Updating Section Links
 on:
   schedule:
     # UTC 20:00 Sunday = Asia/Taipei 04:00 Monday
-    - cron: "0 20 * * 7"
+    - cron: "0 20 * * 0"
   workflow_dispatch:
 
 jobs:
