@@ -4,8 +4,8 @@ from typing import Literal, TypedDict
 import json
 import aiohttp
 
-SECTION_LINKS_PATH = "artifact/section_links.json"
-VD_INFO_PATH = "artifact/vd_info.json"
+SECTION_LINKS_PATH = "artifacts/section_links.json"
+VD_INFO_PATH = "artifacts/vd_info.json"
 LINK_SHAPES_PATH = "public/highway_links.geojson"
 
 # make sure folders exist
