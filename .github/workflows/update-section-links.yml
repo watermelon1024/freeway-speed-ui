@@ -10,6 +10,8 @@ jobs:
   fetch_and_push:
     name: Fetch Section Links and Push to Repo
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
