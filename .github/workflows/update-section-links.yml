@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -39,6 +40,7 @@ jobs:
           retention-days: 7
 
       - name: Commit and Push changes
+        id: commit_and_push
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -48,6 +50,15 @@ jobs:
           if ! git diff --staged --quiet public/; then
             git commit -m "Auto-update section links"
             git push
+            echo "changed=true" >> $GITHUB_OUTPUT
           else
             echo "No changes to commit."
+            echo "changed=false" >> $GITHUB_OUTPUT
           fi
+
+      - name: Dispatch Build Workflow
+        if: steps.commit_and_push.outputs.changed == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run docker-build.yml
