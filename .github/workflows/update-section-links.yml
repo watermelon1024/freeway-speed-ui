@@ -7,12 +7,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  fetch_and_push:
+  fetch-and-push:
     name: Fetch Section Links and Push to Repo
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      actions: write
+
+    outputs:
+      has_changes: ${{ steps.commit_and_push.outputs.changed }}
 
     steps:
       - name: Checkout code
@@ -57,9 +59,7 @@ jobs:
             echo "changed=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Dispatch Build Workflow
-        if: steps.commit_and_push.outputs.changed == 'true'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh workflow run docker-build.yml
+  call-build:
+    needs: fetch-and-push
+    if: needs.fetch-and-push.outputs.has_changes == 'true'
+    uses: ./.github/workflows/docker-build.yml
