@@ -63,5 +63,6 @@ jobs:
     needs: fetch-and-push
     if: needs.fetch-and-push.outputs.has_changes == 'true'
     permissions:
+      contents: read
       packages: write
     uses: ./.github/workflows/docker-build.yml
