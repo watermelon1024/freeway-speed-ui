@@ -60,6 +60,7 @@ jobs:
           fi
 
   call-build:
+    name: Call Docker Build Workflow
     needs: fetch-and-push
     if: needs.fetch-and-push.outputs.has_changes == 'true'
     permissions:
